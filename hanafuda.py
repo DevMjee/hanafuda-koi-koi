@@ -33,89 +33,114 @@
 # Only the winning player tracks points earned in round
 # Rounds can be 3, 6 or 12
 
+import calendar
+
 
 class Card:
-    """Class representing the month a card represents"""
+    """Class representing the month and scoring set (yaku) for a card"""
 
-    def __init__(self, month):
+    def __init__(self, month, yaku):
         self.month = month
+        self.yaku = yaku
+
+    def __str__(self):
+        return f'Month: {self.month}, Set: {self.yaku}'
 
 
 class Chaff(Card):
     """Class representing rules for Chaff scoring cards"""
 
-    def __init__(self, month, sake_cup=False):
-        super().__init__(month)
+    def __init__(self, month, yaku, sake_cup=False):
+        super().__init__(month, yaku)
         self.sake_cup = sake_cup
+
+    def __str__(self):
+        return super().__str__() + f', Sake Cup: {self.sake_cup}'
 
 
 class Poetry(Card):  # 'Blue', 'Red'
     """Class representing rules for Poetry scoring cards"""
 
-    def __init__(self, month, blue=False, red=False):
-        super().__init__(month)
+    def __init__(self, month, yaku, blue=False, red=False):
+        super().__init__(month, yaku)
         self.blue = blue
         self.red = red
+
+    def __str__(self):
+        return super().__str__() + f', Blue: {self.blue}, Red: {self.red}'
 
 
 class Seeds(Card):  # 'Boar-Deer-Butterfly' = animals (let birds != animals)
     """Class representing rules for Seeds scoring cards"""
 
-    def __init__(self, month, animal=False):
-        super().__init__(month)
+    def __init__(self, month, yaku, animal=False):
+        super().__init__(month, yaku)
         self.animal = animal
+
+    def __str__(self):
+        return super().__str__() + f', Animal: {self.animal}'
 
 
 class Light(Card):  # 'Rain', 'Moon', 'Cherry'
     """Class representing rules for Light scoring cards"""
 
-    def __init__(self, month, rain=False, moon=False, cherry=False):
-        super().__init__(month)
+    def __init__(self, month, yaku, rain=False, moon=False, cherry=False):
+        super().__init__(month, yaku)
         self.rain = rain
         self.moon = moon
         self.cherry = cherry
 
+    def __str__(self):
+        return super().__str__() + f', Rain: {self.rain}, Moon: {self.moon}, Cherry: {self.cherry}'
 
-months = ('jan', 'feb', 'mar', 'apr', 'may', 'jun',
-          'jul', 'aug', 'sep', 'oct', 'nov', 'dec')
 
-types = ('chaff_1', 'chaff_2', 'poetry', 'seeds', 'light', 'chaff_3')
+# initialise months list
+months = calendar.month_name[1:]
 
-cards = (  # each dict is a month, each key-value pair is unique card
+# read set names (types) from file, rewrite file to change set names
+# e.g. "bright" instead of "light" - note only first four entries are used
+with open('yaku.txt', mode='r', encoding='utf-8') as file:
+    types = file.read().split(',')
+
+cards = (  # contains objects representing all 48 unique cards
     # jan
-    {types[0]: Chaff(months[0]), types[1]: Chaff(months[0]),
-     types[2]: Poetry(months[0], red=True), types[4]: Light(months[0])},
+    Chaff(months[0], types[0]), Chaff(months[0], types[0]),
+    Poetry(months[0], types[1], red=True), Light(months[0], types[3]),
     # feb
-    {types[0]: Chaff(months[1]), types[1]: Chaff(months[1]),
-     types[2]: Poetry(months[1], red=True), types[3]: Seeds(months[1])},
+    Chaff(months[1], types[0]), Chaff(months[1], types[0]),
+    Poetry(months[1], types[1], red=True), Seeds(months[1], types[2]),
     # mar
-    {types[0]: Chaff(months[2]), types[1]: Chaff(months[2]),
-     types[2]: Poetry(months[2], red=True), types[4]: Light(months[2], cherry=True)},
+    Chaff(months[2], types[0]), Chaff(months[2], types[0]),
+    Poetry(months[2], types[1], red=True),
+    Light(months[2], types[3], cherry=True),
     # apr
-    {types[0]: Chaff(months[3]), types[1]: Chaff(months[3]),
-     types[2]: Poetry(months[3]), types[3]: Seeds(months[3])},
+    Chaff(months[3], types[0]), Chaff(months[3], types[0]),
+    Poetry(months[3], types[1]), Seeds(months[3], types[2]),
     # may
-    {types[0]: Chaff(months[4]), types[1]: Chaff(months[4]),
-     types[2]: Poetry(months[4]), types[3]: Seeds(months[4])},
+    Chaff(months[4], types[0]), Chaff(months[4], types[0]),
+    Poetry(months[4], types[1]), Seeds(months[4], types[2]),
     # jun
-    {types[0]: Chaff(months[5]), types[1]: Chaff(months[5]),
-     types[2]: Poetry(months[5], blue=True), types[3]: Seeds(months[5], animal=True)},
+    Chaff(months[5], types[0]), Chaff(months[5], types[0]),
+    Poetry(months[5], types[1], blue=True),
+    Seeds(months[5], types[2], animal=True),
     # jul
-    {types[0]: Chaff(months[6]), types[1]: Chaff(months[6]),
-     types[2]: Poetry(months[6]), types[3]: Seeds(months[6], animal=True)},
+    Chaff(months[6], types[0]), Chaff(months[6], types[0]),
+    Poetry(months[6], types[1]), Seeds(months[6], types[2], animal=True),
     # aug
-    {types[0]: Chaff(months[7]), types[1]: Chaff(months[7]),
-     types[3]: Seeds(months[7]), types[4]: Light(months[7], moon=True)},
+    Chaff(months[7], types[0]), Chaff(months[7], types[0]),
+    Seeds(months[7], types[2]), Light(months[7], types[3], moon=True),
     # sep
-    {types[0]: Chaff(months[8]), types[1]: Chaff(months[8]),
-     types[2]: Poetry(months[8], blue=True), types[5]: Chaff(months[8], sake_cup=True)},
+    Chaff(months[8], types[0]), Chaff(months[8], types[0]),
+    Poetry(months[8], types[1], blue=True),
+    Chaff(months[8], types[0], sake_cup=True),
     # oct
-    {types[0]: Chaff(months[9]), types[1]: Chaff(months[9]),
-     types[2]: Poetry(months[9], blue=True), types[3]: Seeds(months[9], animal=True)},
+    Chaff(months[9], types[0]), Chaff(months[9], types[0]),
+    Poetry(months[9], types[1], blue=True),
+    Seeds(months[9], types[2], animal=True),
     # nov
-    {types[0]: Chaff(months[10]), types[2]: Poetry(months[10]),
-     types[3]: Seeds(months[10]), types[4]: Light(months[10], rain=True)},
+    Chaff(months[10], types[0]), Poetry(months[10], types[1]),
+    Seeds(months[10], types[2]), Light(months[10], types[3], rain=True),
     # dec
-    {types[0]: Chaff(months[11]), types[1]: Chaff(months[11]),
-     types[5]: Chaff(months[11]), types[4]: Light(months[11])}
+    Chaff(months[11], types[0]), Chaff(months[11], types[0]),
+    Chaff(months[11], types[0]), Light(months[11], types[3])
 )
