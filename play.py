@@ -1,5 +1,4 @@
 """Module to play koi-koi with hanafuda"""
-import random
 import koi_koi
 
 
