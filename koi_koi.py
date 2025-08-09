@@ -13,17 +13,42 @@ class Player:
         self.score = score
 
     def match(self, card, match):
-        """function to move matching cards from hand and table to collected"""
+        """function to check if cards have matching months"""
+        if card.month == match.month:
+            self.update_cards(card, match)
+            return True
+        else:
+            return False
+
+    def update_cards(self, card, match):
+        """function to update cards in hand and table to collected"""
         self.hand.remove(card)
         table.contents.remove(match)
         self.collected.extend([card, match])
 
-    def draw(self, card, table_cards):
+    def draw(self, card, table_choices):
         """function to draw card and match or add to hand"""
-        if card.month in table_cards:
-            self.match(card, table_cards[0])
+        print('### NEW CARD DRAWN ###')
+        print(card)
+        choices = list(
+            choice for choice in table_choices if choice.month == card.month)
+        if choices:
+            print('### DRAW MATCH! ###')
+            for index, choice in enumerate(choices, start=1):
+                print(f'[{index}] - {choice}')
+            while True:
+                try:  # try to accept integer inputs and compare the card months
+                    final_choice = choices[int(
+                        input('Which card on the table would you like to match with?\n'))-1]
+                    if player.match(card, final_choice):
+                        break
+                    else:  # except if not an integer repeat while loop
+                        print('ERROR - something went wrong, this should not print.')
+                except ValueError:
+                    print('Please enter two valid indices.')
         else:
-            self.hand.extend(card)
+            print('### NO MATCHES, ADDING TO TABLE... ###')
+            table.contents.append(card)
 
 
 class Pile:
