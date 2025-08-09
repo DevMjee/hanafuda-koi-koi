@@ -15,7 +15,8 @@ class Player:
     def match(self, card, match):
         """function to move matching cards from hand and table to collected"""
         self.hand.remove(card)
-        self.collected.extend(card, match)
+        table.contents.remove(match)
+        self.collected.extend([card, match])
 
     def draw(self, card, table_cards):
         """function to draw card and match or add to hand"""
