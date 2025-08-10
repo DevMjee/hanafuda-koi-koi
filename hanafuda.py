@@ -44,7 +44,7 @@ class Card:
         self.yaku = yaku
 
     def __str__(self):
-        return f'Month: {self.month}, Set: {self.yaku}'
+        return f'{self.month} {self.yaku}'
 
 
 class Chaff(Card):
@@ -55,7 +55,10 @@ class Chaff(Card):
         self.sake_cup = sake_cup
 
     def __str__(self):
-        return super().__str__() + f', Sake Cup: {self.sake_cup}'
+        if self.sake_cup:
+            return '¦ ' + super().__str__() + ': Sake Cup |'
+        else:
+            return '| ' + super().__str__() + ' |'
 
 
 class Poetry(Card):  # 'Blue', 'Red'
@@ -67,7 +70,12 @@ class Poetry(Card):  # 'Blue', 'Red'
         self.red = red
 
     def __str__(self):
-        return super().__str__() + f', Blue: {self.blue}, Red: {self.red}'
+        if self.blue:
+            return '~ ' + super().__str__() + ': Blue ~'
+        elif self.red:
+            return '~ ' + super().__str__() + ': Red ~'
+        else:
+            return '~ ' + super().__str__() + ' ~'
 
 
 class Seeds(Card):  # 'Boar-Deer-Butterfly' = animals (let birds != animals)
@@ -78,7 +86,10 @@ class Seeds(Card):  # 'Boar-Deer-Butterfly' = animals (let birds != animals)
         self.animal = animal
 
     def __str__(self):
-        return super().__str__() + f', Animal: {self.animal}'
+        if self.animal:
+            return '¦ ' + super().__str__() + ': Animal ¦'
+        else:
+            return '¦ ' + super().__str__() + ' ¦'
 
 
 class Light(Card):  # 'Rain', 'Moon', 'Cherry'
@@ -91,7 +102,14 @@ class Light(Card):  # 'Rain', 'Moon', 'Cherry'
         self.cherry = cherry
 
     def __str__(self):
-        return super().__str__() + f', Rain: {self.rain}, Moon: {self.moon}, Cherry: {self.cherry}'
+        if self.rain:
+            return '/ ' + super().__str__() + ': Rainy /'
+        elif self.moon:
+            return '* ' + super().__str__() + ': Moonlit *'
+        elif self.cherry:
+            return '* ' + super().__str__() + ': Cherry Blossom *'
+        else:
+            return '* ' + super().__str__() + ' *'
 
 
 # initialise months list

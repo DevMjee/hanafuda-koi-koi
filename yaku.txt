@@ -1,1 +1,1 @@
-chaff,poetry,seeds,light
+Chaff,Poetry,Seeds,Light
