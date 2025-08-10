@@ -1,6 +1,7 @@
 """Module to setup koi-koi hands, scoring piles, table, and deck"""
 import random
 import hanafuda
+import gui
 
 
 class Player:
@@ -26,30 +27,23 @@ class Player:
         table.contents.remove(match)
         self.collected.extend([card, match])
 
-    def draw(self, card, table_choices):
+    def draw(self, table_choices):
         """function to draw card and match or add to hand"""
-        print('### NEW CARD DRAWN ###')
+        card = deck.contents.pop()  # draw new card and remove from deck (popping)
+        print('\n### NEW CARD DRAWN ###')
         print(card)
-        choices = list(
-            choice for choice in table_choices if choice.month == card.month)
-        if choices:
-            # add to hand only if match, will remove soon
+
+        matches = list(
+            match for match in table_choices if match.month == card.month)
+        if matches:
+            # add to hand only if match available, will remove soon
             self.hand.append(card)
-            print('### DRAW MATCH! ###')
-            for index, choice in enumerate(choices, start=1):
-                print(f'[{index}] - {choice}')
-            while True:
-                try:  # try to accept integer inputs and compare the card months
-                    final_choice = choices[int(
-                        input('Which card on the table would you like to match with?\n'))-1]
-                    if player.match(card, final_choice):
-                        break
-                    else:  # except if not an integer repeat while loop
-                        print('ERROR - something went wrong, this should not print.')
-                except ValueError:
-                    print('Please enter a valid index.')
+            print('\n### MATCH! ###')
+            gui.print_cards(matches)
+            gui.validate_input(self, matches, draw=card)
+
         else:
-            print('### NO MATCHES, ADDING TO TABLE... ###')
+            print('\n### NO MATCHES, ADDING TO TABLE... ###')
             table.contents.append(card)
 
 
