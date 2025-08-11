@@ -1,18 +1,19 @@
 """Module for common functions to print cards and display game neatly"""
 
 
-def print_cards(contents):
+def print_choices(contents):
     """function to print and display cards neatly with spacing"""
     if contents:
 
         # print list of cards two at a time
-        for index, card in enumerate(contents, start=1):
+        for index, choice in enumerate(contents, start=1):
             if index % 2 == 0:
                 continue
             else:
-                hand_print = f'[{index}] - {card}'
+                hand_print = f'[{index}] - {choice}'
                 hand_print = hand_print.ljust(40)
-                if card != contents[-1]:  # only pass if another card to display exists
+                # only pass if another choice to display exists
+                if choice != contents[-1]:
                     hand_print += f'    [{index+1}] - {contents[index]}'
             print(hand_print)
 
@@ -34,6 +35,10 @@ def validate_input(player, table, draw=False):
 
             # ensure card selections are of matching months
             if player.match(hand_choice, table_choice):
+                print('\n### MATCH! ###')
+                # display updated win list before handover
+                print('\n### UPDATED WIN PILE ###')
+                print_choices(player.collected)
                 # inherently makes move to sort cards into correct piles if matched
                 return
 

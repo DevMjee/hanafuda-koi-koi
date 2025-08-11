@@ -27,24 +27,28 @@ class Player:
         table.contents.remove(match)
         self.collected.extend([card, match])
 
-    def draw(self, table_choices):
+    def draw(self):
         """function to draw card and match or add to hand"""
         card = deck.contents.pop()  # draw new card and remove from deck (popping)
         print('\n### NEW CARD DRAWN ###')
         print(card)
 
         matches = list(
-            match for match in table_choices if match.month == card.month)
+            match for match in table.contents if match.month == card.month)
         if matches:
             # add to hand only if match available, will remove soon
             self.hand.append(card)
-            print('\n### MATCH! ###')
-            gui.print_cards(matches)
+            print('\n### MATCH AVAILABLE ###')
+            gui.print_choices(matches)
             gui.validate_input(self, matches, draw=card)
 
         else:
             print('\n### NO MATCHES, ADDING TO TABLE... ###')
             table.contents.append(card)
+
+    def skip(self, card):
+        """put card down on the table, draw, and pass player turn"""
+        pass
 
 
 class Pile:
@@ -64,6 +68,11 @@ class Pile:
         return list(filter(lambda card: card not in to_remove, self.contents))
 
 
+def sort_by_month(cards):
+    """function to sort objects in lists by their month value"""
+    return sorted(cards, key=lambda card: card.month)
+
+
 # initialise players
 player_1 = Player()
 player_2 = Player()
@@ -73,10 +82,12 @@ deck = Pile(hanafuda.cards)
 random.shuffle(deck.contents)
 
 # distribute cards to table and player hands, update deck
-table = Pile(random.sample(deck.contents, 8))
+table = Pile(sort_by_month(random.sample(deck.contents, 8)))
 deck.contents = deck.remove_cards(table.contents)
 for player in (player_1, player_2):
+    # sort initial hands and table so user can read contents easier
     player.hand.extend(random.sample(deck.contents, 8))
+    player.hand = sort_by_month(player.hand)
     deck.contents = deck.remove_cards(player.hand)
 
 

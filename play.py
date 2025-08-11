@@ -8,12 +8,34 @@ def make_move(player, table):
     """function to define choices turn player can make"""
 
     print('\n### CARDS IN HAND ###')
-    gui.print_cards(player.hand)
+    gui.print_choices(player.hand)
 
     print('\n### CARDS ON TABLE ###')
-    gui.print_cards(table)
+    gui.print_choices(table)
 
-    gui.validate_input(player, table)
+    print('\n### TURN MOVE CHOICES ###')
+    gui.print_choices(('Pick Card Up', 'Put Card Down'))
+    while True:
+        try:
+            move_choice = int(
+                input('\nWould you like to pick up or put down a card?\n'))
+            if move_choice == 1:  # pick up and draw
+                # need to implement check to see if any matches available, else forced skip
+                gui.validate_input(player, table)
+                break
+            elif move_choice == 2:  # put down and draw
+                # discard = player.something() - which card to discard?
+                # add to table, then draw, then break
+                player.skip()
+                break
+            else:
+                print(player.hand[100])  # force index error if out of range(2)
+
+        except ValueError as err:
+            print(f'\n[ERROR: {err}] \nPlease enter an integer value')
+
+        except IndexError as err:
+            print(f'[ERROR: {err}] \nPlease enter a value between 1 and 2')
 
 
 def play_game(players):
@@ -24,18 +46,14 @@ def play_game(players):
 
             # always display both win piles
             print('\n### YOUR CURRENT WIN PILE ###')
-            gui.print_cards(player.collected)
+            gui.print_choices(player.collected)
             print('\n### OPPONENT WIN PILE ###')
             opponent = [other for other in players if other != player]
-            gui.print_cards(opponent[0].collected)
+            gui.print_choices(opponent[0].collected)
 
             # actual move choice
             make_move(player, koi_koi.table.contents)
-            player.draw(koi_koi.table.contents)
-
-            # display updated win list before handover
-            print('\n### UPDATED WIN PILE ###')
-            gui.print_cards(player.collected)
+            player.draw()
 
             if input('\nContinue to next player?') == 'no':
                 break
