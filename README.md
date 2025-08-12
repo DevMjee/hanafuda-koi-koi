@@ -8,6 +8,9 @@ Must Have Requirements:
   
 Should Have Requirements:
 * Create varying levels of the bot player (e.g. easy, medium, hard, impossible)
+* Tutorial/Explanation of game rules.
 
 Nice to Have Requirements:
 * Experiment with simulating games other than koi koi (e.g. hawaiian hanafuda) using the same objects.
+* Nicely printed displays to easily read and manage the cards and their properties.
+* Networking to allow to separate devices to play together.
