@@ -1,6 +1,11 @@
 """Module for common functions to print cards and display game neatly"""
 
 
+def display_contents(contents, msg):
+    print('\n###', str(msg).upper(), '###')
+    print_choices(contents)
+
+
 def print_choices(contents):
     """function to print and display cards neatly with spacing"""
     if contents:
@@ -21,7 +26,7 @@ def print_choices(contents):
         print('Empty!')
 
 
-def validate_input(player, table, draw=False):
+def validate_input(player, table, draw=False, skip=False):
     """function to check valid integer inputs for working controls"""
     while True:
         try:  # try to accept integer inputs and compare the card months
@@ -30,22 +35,14 @@ def validate_input(player, table, draw=False):
             else:  # during turn play
                 hand_choice = player.hand[int(
                     input('\nWhich card would you like to play from your hand?\n'))-1]
-            table_choice = table[int(
-                input('\nWhich card on the table would you like to match with?\n'))-1]
-
-            # ensure card selections are of matching months
-            if player.match(hand_choice, table_choice):
-                print('\n### MATCH! ###')
-                # display updated win list before handover
-                print('\n### UPDATED WIN PILE ###')
-                print_choices(player.collected)
-                # inherently makes move to sort cards into correct piles if matched
-                return
-
-            # else/except if not a valid integer, repeat while loop
+            if skip:  # don't pick from table if putting down card for turn
+                return hand_choice
             else:
-                print(
-                    f'\n[ERROR: invalid selection]\nPlease match cards belonging to the same month. {hand_choice.month} is not {table_choice.month}.')
+                table_choice = table[int(
+                    input('\nWhich card on the table would you like to match with?\n'))-1]
+
+            return hand_choice, table_choice
+
         except ValueError as err:
             print(f'\n[ERROR: {err}] \nPlease enter an integer value.')
         except IndexError as err:

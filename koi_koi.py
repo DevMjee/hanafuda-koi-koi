@@ -15,17 +15,28 @@ class Player:
 
     def match(self, card, match):
         """function to check if cards have matching months"""
+        # ensure card selections are of matching months
         if card.month == match.month:
             self.update_cards(card, match)
+            print('\nMATCH!')
+            # display updated win list before handover
+            gui.display_contents(self.collected, 'updated win pile')
+            # inherently makes move to sort cards into correct piles if matched
             return True
+        # else/except if not a valid integer, repeat while loop
         else:
+            print(
+                f'\n[ERROR: invalid selection]\nPlease match cards belonging to the same month. {card.month} is not {match.month}.')
             return False
 
-    def update_cards(self, card, match):
+    def update_cards(self, card, match=None, skip=False):
         """function to update cards in hand and table to collected"""
         self.hand.remove(card)
-        table.contents.remove(match)
-        self.collected.extend([card, match])
+        if skip:
+            table.contents.append(card)
+        else:
+            table.contents.remove(match)
+            self.collected.extend([card, match])
 
     def draw(self):
         """function to draw card and match or add to hand"""
@@ -38,17 +49,24 @@ class Player:
         if matches:
             # add to hand only if match available, will remove soon
             self.hand.append(card)
-            print('\n### MATCH AVAILABLE ###')
-            gui.print_choices(matches)
-            gui.validate_input(self, matches, draw=card)
+            gui.display_contents(matches, 'match available')
+            card, match = gui.validate_input(self, matches, draw=card)
+            self.match(card, match)
 
         else:
-            print('\n### NO MATCHES, ADDING TO TABLE... ###')
+            print('\nNO MATCHES...')
             table.contents.append(card)
 
     def skip(self, card):
         """put card down on the table, draw, and pass player turn"""
-        pass
+        if card.month in [match.month for match in table.contents]:  # restrict putting down cards with existing match
+            print(
+                '\n[ERROR: invalid selection]\nCard has matching month on table. Please put down a card without a match.')
+            return False
+
+        else:  # put down card on table and draw one
+            self.update_cards(card, skip=True)
+            return True
 
 
 class Pile:

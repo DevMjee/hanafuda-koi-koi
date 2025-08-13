@@ -1,5 +1,4 @@
 """Module to play koi-koi with hanafuda"""
-import os
 import koi_koi
 import gui
 
@@ -7,27 +6,30 @@ import gui
 def make_move(player, table):
     """function to define choices turn player can make"""
 
-    print('\n### CARDS IN HAND ###')
-    gui.print_choices(player.hand)
+    # display current player hand and table
+    gui.display_contents(player.hand, 'cards in hand')
+    gui.display_contents(table, 'cards on table')
+    gui.display_contents(('Pick Card Up', 'Put Card Down'), 'player options')
 
-    print('\n### CARDS ON TABLE ###')
-    gui.print_choices(table)
-
-    print('\n### TURN MOVE CHOICES ###')
-    gui.print_choices(('Pick Card Up', 'Put Card Down'))
     while True:
         try:
             move_choice = int(
                 input('\nWould you like to pick up or put down a card?\n'))
             if move_choice == 1:  # pick up and draw
                 # need to implement check to see if any matches available, else forced skip
-                gui.validate_input(player, table)
-                break
+                card, match = gui.validate_input(player, table)
+                if player.match(card, match):
+                    return
+
             elif move_choice == 2:  # put down and draw
                 # discard = player.something() - which card to discard?
                 # add to table, then draw, then break
-                player.skip()
-                break
+                card = gui.validate_input(player, table, skip=True)
+                if player.skip(card):
+                    gui.display_contents(
+                        koi_koi.table.contents, 'updated table')
+                    return
+
             else:
                 print(player.hand[100])  # force index error if out of range(2)
 
@@ -35,32 +37,31 @@ def make_move(player, table):
             print(f'\n[ERROR: {err}] \nPlease enter an integer value')
 
         except IndexError as err:
-            print(f'[ERROR: {err}] \nPlease enter a value between 1 and 2')
+            print(
+                f'[ERROR: {err}] \nPlease enter a value between 1 [Pick Up] and 2 [Put Down]')
 
 
 def play_game(players):
     """function to simulate games between different players"""
     while True:
         for index, player in enumerate(players, start=1):
-            print(f"### PLAYER {index}'S TURN ###")
+            print('\n' * 32)
+            gui.display_contents((), f"player {index}'s turn")
 
             # always display both win piles
-            print('\n### YOUR CURRENT WIN PILE ###')
-            gui.print_choices(player.collected)
-            print('\n### OPPONENT WIN PILE ###')
+            gui.display_contents(player.collected, 'your current win pile')
+            # get up to date opponent win pile
             opponent = [other for other in players if other != player]
-            gui.print_choices(opponent[0].collected)
+            gui.display_contents(opponent[0].collected, "opponent's win pile")
 
             # actual move choice
             make_move(player, koi_koi.table.contents)
             player.draw()
+            gui.display_contents(koi_koi.table.contents, 'updated table')
 
-            if input('\nContinue to next player?') == 'no':
-                break
-            else:
-                os.system('cls')  # clear to stop hand peeking at turn handover
+            print('\n' * 8)
+            input('Press any key to end turn and pass to the next player.\n')
 
 
 if __name__ == '__main__':
-    os.system('cls')
     play_game((koi_koi.player_1, koi_koi.player_2))
