@@ -7,10 +7,12 @@ import gui
 class Player:
     """Class defining current player hand, card pickups, and score across rounds"""
 
-    def __init__(self, hand=None, collected=None, score=0):
+    def __init__(self, hand=None, collected=None, sets=None, score=0):
         if hand is None and collected is None:
             self.hand = []
             self.collected = []
+            self.sets = {}
+            self.koi = False
         self.score = score
 
     def match(self, card, match):
@@ -41,7 +43,7 @@ class Player:
     def draw(self):
         """function to draw card and match or add to hand"""
         card = deck.contents.pop()  # draw new card and remove from deck (popping)
-        print('\n### NEW CARD DRAWN ###')
+        print('\nNEW CARD DRAWN')
         print(card)
 
         matches = list(
@@ -67,6 +69,182 @@ class Player:
         else:  # put down card on table and draw one
             self.update_cards(card, skip=True)
             return True
+
+    def check_win(self, koi):
+        """function to track sets and score"""
+        win, cherry, moon, rain = False, False, False, False
+        for rarity, card_set in enumerate(hanafuda.types):
+            cards_from_set = [
+                card for card in self.collected if card.yaku == card_set]
+            set_count = len(cards_from_set)
+
+            # using to track which score to add: higher rarity = more points for less (chaff = 0, light = 3)
+            if rarity == 0:  # chaff
+                # check special sets - not for chaff, but for seeds and light
+                for card in cards_from_set:
+                    # currently allowing sake cup to fit in multiple sets at one time - too strong? should it be one (strongest set) at a time?
+                    if card.sake_cup:
+                        self.sets['sake'] = None  # store to track existence
+
+                # check set limit reached and if newly obtained
+                if card_set in self.sets:
+                    if self.sets[card_set] < set_count:
+                        self.score += set_count - 10  # adds only 1 per new chaff
+                        print(f'\n{card_set} SET WON!')
+                        win = True
+
+                elif set_count >= 10:
+                    self.score += set_count - 9  # adds 1 + 1 per extra chaff
+                    # for koi koi phase tracking
+                    self.sets[card_set] = set_count
+                    print(f'\n{card_set.upper()} SET WON!')
+                    win = True
+
+            elif rarity == 1:  # poetry
+                # check special sets - must check all as 'if'
+                blues = len(
+                    [card for card in cards_from_set if card.blue])
+                reds = len(
+                    [card for card in cards_from_set if card.red])
+                if blues == 3 and 'blue' not in self.sets:
+                    self.score += 5
+                    self.sets['blue'] = None  # store to track win
+                    print(f'\nBLUE {card_set.upper()} SET WON!')
+                    win = True
+
+                if reds == 3 and 'red' not in self.sets:
+                    self.score += 5
+                    self.sets['red'] = None  # store to track win
+                    print(f'\nRED {card_set.upper()} SET WON!')
+                    win = True
+
+                # check set limit reached and if newly obtained
+                if card_set in self.sets:
+                    if self.sets[card_set] < set_count:
+                        self.score += set_count - 5  # adds only 1 per new poetry
+                        print(f'\n{card_set.upper()} SET WON!')
+                        win = True
+
+                elif set_count >= 5:
+                    self.score += set_count - 4  # adds 1 + 1 per extra poetry
+                    # for koi koi phase tracking
+                    self.sets[card_set] = set_count
+                    print(f'\n{card_set.upper()} SET WON!')
+                    win = True
+
+            elif rarity == 2:  # seeds
+                # check special sets
+                if 'sake' in self.sets:  # counts as seeds as well
+                    set_count += 1
+
+                animals = len(
+                    [card for card in cards_from_set if card.animal])
+                if animals == 3 and 'animal' not in self.sets:
+                    self.score += 5
+                    # store only to track win, not score
+                    self.sets['animal'] = None
+                    print(f'\nANIMAL {card_set.upper()} SET WON!')
+                    win = True
+
+                # check set limit reached and if newly obtained
+                if card_set in self.sets:
+                    if self.sets[card_set] < set_count:
+                        self.score += set_count - 5  # adds only 1 per new seeds
+                        print(f'\n{card_set.upper()} SET WON!')
+                        win = True
+
+                elif set_count >= 5:
+                    self.score += set_count - 4  # adds 1 + 1 per extra seeds
+                    # for koi koi phase tracking
+                    self.sets[card_set] = set_count
+                    print(f'\n{card_set.upper()} SET WON!')
+                    win = True
+
+            elif rarity == 3:  # light
+                # check special sets - other light sets don't add cumulative score, prefer rarest set
+                for card in cards_from_set:
+                    if card.rain:
+                        rain = True
+                    if card.moon:
+                        moon = True
+                    if card.cherry:
+                        cherry = True
+
+                # can have both viewings added with lights
+                if cherry and 'sake' in self.sets and 'cherry' not in self.sets:
+                    self.score += 5
+                    self.sets['cherry'] = None
+                    print(f'\nCHERRY VIEWING {card_set.upper()} SET WON!')
+                    win = True
+                if moon and 'sake' in self.sets and 'moon' not in self.sets:
+                    self.score += 5
+                    self.sets['moon'] = None
+                    print(f'\nMOON VIEWING {card_set.upper()} SET WON!')
+                    win = True
+
+                # don't add scores here, only add the highest at TRIGGER WIN game end - 10, 7, 8, 6
+                if set_count == 5 and 'five' not in self.sets:
+                    self.sets['five'] = None
+                    print(f'\nFIVE {card_set.upper()} SET WON!')
+                    win = True
+
+                elif set_count == 4 and 'four' not in self.sets:
+                    if rain:
+                        self.sets['rain'] = None
+                        print(f'\nRAINY FOUR {card_set.upper()} SET WON!')
+                        win = True
+
+                    else:
+                        self.sets['four'] = None
+                        print(f'\nFOUR {card_set.upper()} SET WON!')
+                        win = True
+
+                elif set_count == 3:
+                    self.sets['three'] = None
+                    print(f'\nTHREE {card_set.upper()} SET WON!')
+                    win = True
+
+        if win:
+            self.koi_call(koi)
+        else:
+            return False  # game_end, koi
+
+    def koi_call(self, koi=False):
+        """function to offer koi-koi"""
+        if koi:  # no choice if koi koi called already
+            choice = 2
+        else:
+            gui.display_contents(('Call Koi-Koi', 'End Round'),
+                                 'winning player options')
+            choice = gui.validate_between_two(
+                self, 'Would you like to call Koi-Koi?')
+        if choice == 1:
+            return True
+        else:
+            print('\nENDING ROUND...')
+            self.tally_score(koi)
+            return 'end'  # end game
+
+    def tally_score(self, koi):
+        """function to add final light scores and continue if rounds remain"""
+        if 'five' in self.sets:
+            self.score += 10
+        elif 'four' in self.sets:
+            self.score += 8
+        elif 'rain' in self.sets:
+            self.score += 7
+        elif 'three' in self.sets:
+            self.score += 6
+
+        # score doubles if >= 7
+        if self.score >= 7:
+            self.score *= 2
+
+        print(f'\nFINAL SCORE: {self.score}')
+        if koi:
+            return True
+        else:
+            return True, True
 
 
 class Pile:

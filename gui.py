@@ -26,6 +26,23 @@ def print_choices(contents):
         print('Empty!')
 
 
+def validate_between_two(player, msg):
+    while True:
+        try:
+            choice = int(input(f'\n{msg}\n'))
+            if choice in (1, 2):
+                return choice
+            else:
+                print(player.hand[9])  # force index error if out of range(2)
+
+        except ValueError as err:
+            print(f'\n[ERROR: {err}] \nPlease enter an integer value')
+
+        except IndexError as err:
+            print(
+                f'[ERROR: {err}] \nPlease enter a valid choice: either 1 or 2')
+
+
 def validate_input(player, table, draw=False, skip=False):
     """function to check valid integer inputs for working controls"""
     while True:

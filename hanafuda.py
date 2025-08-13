@@ -19,7 +19,7 @@
 # 4 (all) of a month    = 6 points + instant win - 4 of a kind
 # 4 pairs of 4 months   = 6 points + instant win - 4 pairs
 
-# if points > 7, double score
+# if points >= 7, double score
 # 48 total cards
 # - 5 lights
 # - 9 seeds
