@@ -3,11 +3,10 @@ import koi_koi
 import gui
 
 # still need to implement
-# - fix game end: score fine, but 'game over' not working here
-# - lucky hand detection and implementation
-# - rule for picking up three cards at once (starting table has three of a single month)
+# - rule for empty hand
 # - ask number of rounds
 # - player going first = random, then winner of last round
+# - lucky hand detection and implementation
 
 
 def make_move(player, table):
@@ -46,7 +45,8 @@ def play_game(players):
             print('\n' * 32)
             if koi:
                 print('**** KOI-KOI CALLED! ****')
-            gui.display_contents((), f"player {index}'s turn")
+
+            print(f"PLAYER {index}'s TURN:")
 
             # always display both win piles
             gui.display_contents(player.collected, 'your current win pile')
@@ -59,15 +59,19 @@ def play_game(players):
             player.draw()
             gui.display_contents(koi_koi.table.contents, 'updated table')
 
-            koi = player.check_win(koi)  # koi can be False, True, or 'end'
-            print(type(koi))  # DEBUG
-            print(type('end'))  # DEBUG
+            if koi:
+                if isinstance(player.check_win(koi), str):
+                    print('\n### GAME OVER ###\n')
+                    playing = False
+                    break
+            else:
+                koi = player.check_win(koi)  # koi can be False, True, or 'end'
 
-            if type(koi) == type('end'):
+            if isinstance(koi, str):
 
                 # CURRENTLY NOT REACHING HERE #
 
-                print('** GAME OVER **')
+                print('\n### GAME OVER ###\n')
                 playing = False
                 break
             else:

@@ -18,12 +18,23 @@ class Player:
     def match(self, card, match):
         """function to check if cards have matching months"""
         # ensure card selections are of matching months
+        table_matches = [  # check how many matches exist on table
+            table_card for table_card in table.contents if card.month == table_card.month]
         if card.month == match.month:
-            self.update_cards(card, match)
-            print('\nMATCH!')
-            # display updated win list before handover
-            gui.display_contents(self.collected, 'updated win pile')
-            # inherently makes move to sort cards into correct piles if matched
+            if len(table_matches) == 3:  # case where the entire month can be picked up at once
+                print('\nCOMPLETE MONTH MATCH!')
+                for table_card in table_matches:
+                    self.update_cards(card, table_card)
+                    # add again so update does not try to remove from hand twice
+                    self.hand.append(card)
+                self.hand.remove(card)
+                gui.display_contents(self.collected, 'updated win pile')
+
+            else:  # match one card with one table match
+                self.update_cards(card, match)
+                print('\nMATCH!')
+                # display updated win list before handover
+                gui.display_contents(self.collected, 'updated win pile')
             return True
         # else/except if not a valid integer, repeat while loop
         else:
@@ -34,11 +45,16 @@ class Player:
     def update_cards(self, card, match=None, skip=False):
         """function to update cards in hand and table to collected"""
         self.hand.remove(card)
-        if skip:
-            table.contents.append(card)
+        if isinstance(match, list):
+            for month_card in match:
+                table.contents.remove(month_card)
         else:
-            table.contents.remove(match)
-            self.collected.extend([card, match])
+            if skip:
+                table.contents.append(card)
+                return
+            else:
+                table.contents.remove(match)
+        self.collected.extend([card, match])
 
     def draw(self):
         """function to draw card and match or add to hand"""
@@ -69,6 +85,8 @@ class Player:
         else:  # put down card on table and draw one
             self.update_cards(card, skip=True)
             return True
+
+    # too many conditionals: check how to refactor the remaining player functions here? #
 
     def check_win(self, koi):
         """function to track sets and score"""
@@ -189,7 +207,7 @@ class Player:
                     win = True
 
                 elif set_count == 4 and 'four' not in self.sets:
-                    if rain:
+                    if rain and 'rain' not in self.sets:
                         self.sets['rain'] = None
                         print(f'\nRAINY FOUR {card_set.upper()} SET WON!')
                         win = True
@@ -199,13 +217,13 @@ class Player:
                         print(f'\nFOUR {card_set.upper()} SET WON!')
                         win = True
 
-                elif set_count == 3:
+                elif set_count == 3 and 'three' not in self.sets:
                     self.sets['three'] = None
                     print(f'\nTHREE {card_set.upper()} SET WON!')
                     win = True
 
         if win:
-            self.koi_call(koi)
+            return self.koi_call(koi)
         else:
             return False  # game_end, koi
 
@@ -222,10 +240,10 @@ class Player:
             return True
         else:
             print('\nENDING ROUND...')
-            self.tally_score(koi)
+            self.tally_score()
             return 'end'  # end game
 
-    def tally_score(self, koi):
+    def tally_score(self):
         """function to add final light scores and continue if rounds remain"""
         if 'five' in self.sets:
             self.score += 10
@@ -241,10 +259,6 @@ class Player:
             self.score *= 2
 
         print(f'\nFINAL SCORE: {self.score}')
-        if koi:
-            return True
-        else:
-            return True, True
 
 
 class Pile:
