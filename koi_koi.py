@@ -256,7 +256,7 @@ class Player:
         if self.score >= 7:
             self.score *= 2
 
-        print(f'\nFINAL SCORE: {self.score}')
+        print(f'\nROUND SCORE: {self.score}')
 
 
 class Pile:
@@ -281,22 +281,29 @@ def sort_by_month(cards):
     return sorted(cards, key=lambda card: card.month)
 
 
-# initialise players
+def shuffle_cards(players):
+    """creates deck and distributes hands, for resetting rounds"""
+    # create a randomly shuffled deck of cards
+    new_deck = Pile(hanafuda.cards)
+    random.shuffle(new_deck.contents)
+
+    # distribute cards to table and player hands, update deck
+    new_table = Pile(sort_by_month(random.sample(new_deck.contents, 8)))
+    new_deck.contents = new_deck.remove_cards(new_table.contents)
+    for player in players:
+        # sort initial hands and table so user can read contents easier
+        player.hand.extend(random.sample(new_deck.contents, 8))
+        player.hand = sort_by_month(player.hand)
+        new_deck.contents = new_deck.remove_cards(player.hand)
+
+    return new_deck, new_table
+
+
+# initialise players, deck, and table
 player_1 = Player()
 player_2 = Player()
 
-# create a randomly shuffled deck of cards
-deck = Pile(hanafuda.cards)
-random.shuffle(deck.contents)
-
-# distribute cards to table and player hands, update deck
-table = Pile(sort_by_month(random.sample(deck.contents, 8)))
-deck.contents = deck.remove_cards(table.contents)
-for player in (player_1, player_2):
-    # sort initial hands and table so user can read contents easier
-    player.hand.extend(random.sample(deck.contents, 8))
-    player.hand = sort_by_month(player.hand)
-    deck.contents = deck.remove_cards(player.hand)
+deck, table = None, None  # space holders to use in functions~
 
 
 if __name__ == '__main__':
