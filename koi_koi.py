@@ -7,13 +7,14 @@ import gui
 class Player:
     """Class defining current player hand, card pickups, and score across rounds"""
 
-    def __init__(self, hand=None, collected=None, sets=None, score=0):
-        if hand is None and collected is None:
+    def __init__(self, hand=None, collected=None, sets=None, score=0, final_score=0):
+        if hand is None and collected is None and sets is None:
             self.hand = []
             self.collected = []
             self.sets = {}
             self.koi = False
         self.score = score
+        self.final_score = final_score
 
     def match(self, card, match):
         """function to check if cards have matching months"""
@@ -23,11 +24,7 @@ class Player:
         if card.month == match.month:
             if len(table_matches) == 3:  # case where the entire month can be picked up at once
                 print('\nCOMPLETE MONTH MATCH!')
-                for table_card in table_matches:
-                    self.update_cards(card, table_card)
-                    # add again so update does not try to remove from hand twice
-                    self.hand.append(card)
-                self.hand.remove(card)
+                self.update_cards(card, table_matches)
                 gui.display_contents(self.collected, 'updated win pile')
 
             else:  # match one card with one table match
@@ -48,13 +45,14 @@ class Player:
         if isinstance(match, list):
             for month_card in match:
                 table.contents.remove(month_card)
+                self.collected.append(month_card)
+            self.collected.append(card)
         else:
             if skip:
                 table.contents.append(card)
-                return
             else:
                 table.contents.remove(match)
-        self.collected.extend([card, match])
+                self.collected.extend([card, match])
 
     def draw(self):
         """function to draw card and match or add to hand"""

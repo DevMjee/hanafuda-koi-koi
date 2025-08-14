@@ -3,7 +3,6 @@ import koi_koi
 import gui
 
 # still need to implement
-# - rule for empty hand
 # - ask number of rounds
 # - player going first = random, then winner of last round
 # - lucky hand detection and implementation
@@ -56,6 +55,7 @@ def play_game(players):
 
             # actual move choice
             make_move(player, koi_koi.table.contents)
+
             player.draw()
             gui.display_contents(koi_koi.table.contents, 'updated table')
 
@@ -65,12 +65,17 @@ def play_game(players):
                     playing = False
                     break
             else:
-                koi = player.check_win(koi)  # koi can be False, True, or 'end'
+                # koi can be False, True, or 'end'
+                koi = player.check_win(koi)
 
             if isinstance(koi, str):
-
-                # CURRENTLY NOT REACHING HERE #
-
+                print('\n### GAME OVER ###\n')
+                player.final_score += player.score
+                playing = False
+                break
+            # check opponent hand is empty as well to end for empty hand
+            elif not opponent[0].hand:
+                print('\n### HAND EMPTY, NO SET MADE, NO POINTS, ENDING GAME... ###\n')
                 print('\n### GAME OVER ###\n')
                 playing = False
                 break
