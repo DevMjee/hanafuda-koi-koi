@@ -5,6 +5,7 @@ import gui
 
 # still need to implement
 # - lucky hand detection and implementation
+# - - (keep lucky hand off? not much fun if it happens, just a scroll of text)
 # - create bot player for computer vs human
 # - UPDATE README to include instructions and summary of game with screenshots and python version
 
@@ -18,85 +19,108 @@ def make_move(player, table):
     gui.display_contents(('Pick Card Up', 'Put Card Down'), 'player options')
 
     while True:
-        move_choice = gui.validate_between_two(
-            player, 'Would you like to pick up or put down a card?')
-        if move_choice == 1:  # pick up and draw
-            # need to implement check to see if any matches available, else forced skip
-            card, match = gui.validate_input(player, table)
-            if player.match(card, match):
-                return
+        move_choice = gui.validate_input(  # move choice to pick up or put down card for turn
+            'Would you like to pick up or put down a card?', 2)
+        if move_choice == 0:  # pick up and draw
+            # check to see if any matches available, else move_choice again
+            hand_choice = player.hand[gui.validate_input(
+                'Which card would you like to play from your hand?', len(player.hand))]
 
-        elif move_choice == 2:  # put down and draw
-            # discard = player.something() - which card to discard?
+            table_matches = player.list_matches(hand_choice)
+            # ensure card selections are of matching months
+            if table_matches:
+                player.match(hand_choice, table_matches)
+                return  # break loop
+            else:  # if mismatched month
+                print(
+                    f'\n[ERROR: invalid selection]\nPlease match cards from the same month. {hand_choice.month} is not on the table.')
+
+        elif move_choice == 1:  # put down and draw
             # add to table, then draw, then break
-            card = gui.validate_input(player, table, skip=True)
-            if player.skip(card):
-                gui.display_contents(
-                    koi_koi.table.contents, 'updated table')
-                return
+            hand_choice = player.hand[gui.validate_input(
+                'Which card would you like to play from your hand?', len(player.hand))]
+            # restrict putting down cards with existing match
+            if player.list_matches(hand_choice):
+                print(
+                    '\n[ERROR: invalid selection]\nCard has matching month on table. Please put down a card without a match.')
+
+            else:  # put down card on table and draw one
+                player.update_cards(hand_choice, skip=True)
+                gui.display_contents(table, 'updated table')
+                return  # break loop
 
 
+# forces koi koi currently
 def play_game(players):
     """function to simulate games between different players"""
-    # below is for koi-koi
-    rounds = 3  # number of rounds - base option is 3, should be validate_input() here for 3, 6, or 12
-    winner = False
+    print('\nWelcome to Hanafuda (Koi-Koi)\n')
+
+    # ask for number of rounds to play for between 3, 6, 9, and 12
+    gui.display_contents([(str((num+1)*3) + ' Rounds')
+                         for num in range(4)], 'game round options')
+    # reobtain rounds number from validated input
+    rounds = (gui.validate_input(
+        'Please input the number of rounds you would like to play.', 4) + 1) * 3
+
+    # initialise tracker for last round winner
+    winner = None
+
+    # loop for number of rounds selected
     for round_num in range(rounds):
-        koi = False  # initialise to track when entering koi-koi round phase
-        playing = True
+        koi = None  # initialise to track which player enters koi-koi round phase
+        playing = True  # initialise to track when playing ends for round
+
+        # decide turn order
         if winner:  # winner of last round should go first in turn order
             players.insert(0, players.pop(players.index(winner)))
-            winner = False
-        else:  # randomly assign a player to move first
+            winner = None
+        else:  # randomly assign a player to move first if no winner
             random.shuffle(players)
 
         for player in players:  # reset score and tracked sets at start of round
-            player.score, player.sets, player.collected = 0, {}, []
+            player.score, player.sets, player.collected, player.hand = 0, {}, [], []
+
         # reset deck and table at start of round
         koi_koi.deck, koi_koi.table = koi_koi.shuffle_cards(players)
 
         while playing:
-            for index, player in enumerate(players, start=1):
-                print('\n' * 32)
+            for player in players:
+                print('\n' * 32)  # 'clearscreen' for both windows and mac
                 if koi:
-                    print('**** KOI-KOI CALLED! ****')
+                    print(f'**** KOI-KOI CALLED BY {koi.name.upper()}! ****')
 
-                # get up to date opponent win pile
-                opponent = [other for other in players if other != player]
+                # get up to date opponent win pile by referring to opponent as rival[0]
+                rival = [other for other in players if other != player]
                 print(
-                    f"PLAYER {index}'s TURN. \nYOUR POINTS SECURED: {player.final_score}\nRIVAL'S POINTS SECURED: {opponent[0].final_score}")
+                    f"{player.name.upper()}'s TURN. \nYOUR POINTS SECURED: {player.final_score} \nRIVAL'S POINTS SECURED: {rival[0].final_score}")
 
                 # always display both win piles
                 gui.display_contents(player.collected, 'your current win pile')
-                gui.display_contents(
-                    opponent[0].collected, "rival's win pile")
+                gui.display_contents(rival[0].collected, "rival's win pile")
 
                 # actual move choice
                 make_move(player, koi_koi.table.contents)
-
                 player.draw()
                 gui.display_contents(koi_koi.table.contents, 'updated table')
 
-                if koi:
-                    if isinstance(player.check_win(koi), str):
-                        print('\n### GAME OVER ###\n')
+                # check if winner exists
+                winner = player.check_win(koi)
+
+                if winner:
+                    # if winner is True, flag koi koi phase
+                    if isinstance(winner, bool):
+                        koi = player  # track who called koi koi for printing
+                        winner = None
+                    # if winner is a player, end round
+                    else:
+                        print('\nROUND OVER\n')
+                        player.final_score += player.score
                         playing = False
                         break
-                else:
-                    # koi can be False, True, or 'end'
-                    koi = player.check_win(koi)
-
-                if isinstance(koi, str):
-                    print('\n### ROUND OVER ###\n')
-                    player.final_score += player.score
-                    winner = player
-                    playing = False
-                    break
-                # check opponent hand is empty as well to end for empty hand
-                elif not opponent[0].hand:
+                # check opponent hand is end for empty hand finish (tie)
+                elif not rival[0].hand:
                     print(
-                        '\n### HAND EMPTY, NO SET MADE, NO POINTS, ENDING GAME... ###\n')
-                    print('\n### ROUND OVER ###\n')
+                        '\nROUND OVER: HAND EMPTY, NO SET MADE, NO POINTS = TIE. ENDING ROUND...\n')
                     playing = False
                     break
                 else:
@@ -105,22 +129,27 @@ def play_game(players):
                         'Press the enter key to end turn and pass to the next player.\n')
 
         # End round print of scores
-        player_scores = []
-        for index, player in enumerate(players, start=1):
-            player_scores.append(player.final_score)
+        for player in players:
             print(
-                f'\nPLAYER {index} SCORE FOR ROUND {round_num+1}: {player.final_score}\n')
-        print(f'END OF ROUND {round_num+1}')
+                f'\n{player.name} SCORE FOR ROUND {round_num+1}: {player.final_score}\n')
+        print(f'END OF ROUND {round_num+1} out of {rounds}')
         input('Press enter to continue.')
 
     # Endgame print winner
     print('\n' * 8)
     print('GAME OVER')
-    if player_scores[0] > player_scores[1]:
-        print('PLAYER 1 WINS!')
-    else:
-        print('PLAYER 2 WINS!')
+    print(f'\n{winner.name.upper()} WINS!\n')
 
 
+# edit more when more game options added
 if __name__ == '__main__':
-    play_game([koi_koi.player_1, koi_koi.player_2])
+    # ...or default names
+    name_1 = input('\nEnter Player 1\'s name:\n').strip() or 'Player 1'
+    name_2 = input('\nEnter Player 2\'s name:\n').strip() or 'Player 2'
+
+    # transfer deck and table creation to play.py? #
+
+    # initialise players, deck, and table
+    player_1 = koi_koi.Player(name=name_1)
+    player_2 = koi_koi.Player(name=name_2)
+    play_game([player_1, player_2])

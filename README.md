@@ -1,5 +1,6 @@
 # hanafuda-koi-koi
 A simulation of the koi koi card game in Python.
+Used different python files to enact separation of concerns.
 
 Must Have Requirements:
 * Build Class Objects for the hanafuda cards, including inheritance e.g. for cards in the same month.

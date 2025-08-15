@@ -7,82 +7,68 @@ import gui
 class Player:
     """Class defining current player hand, card pickups, and score across rounds"""
 
-    def __init__(self, hand=None, collected=None, sets=None, score=0, final_score=0):
+    def __init__(self, name='', hand=None, collected=None, sets=None, score=0, final_score=0):
         if hand is None and collected is None and sets is None:
             self.hand = []
             self.collected = []
             self.sets = {}
             self.koi = False
+        self.name = name
         self.score = score
         self.final_score = final_score
 
-    def match(self, card, match):
-        """function to check if cards have matching months"""
-        # ensure card selections are of matching months
-        table_matches = [  # check how many matches exist on table
-            table_card for table_card in table.contents if card.month == table_card.month]
-        if card.month == match.month:
-            if len(table_matches) == 3:  # case where the entire month can be picked up at once
-                print('\nCOMPLETE MONTH MATCH!')
-                self.update_cards(card, table_matches)
-                gui.display_contents(self.collected, 'updated win pile')
+    def match(self, card, matches):
+        """function to check if cards have matching months on table"""
+        if len(matches) == 3:  # case where the entire month can be picked up at once
+            self.update_cards(card, matches)
+            print('\nCOMPLETE MONTH MATCH!')
 
-            else:  # match one card with one table match
-                self.update_cards(card, match)
-                print('\nMATCH!')
-                # display updated win list before handover
-                gui.display_contents(self.collected, 'updated win pile')
-            return True
-        # else/except if not a valid integer, repeat while loop
-        else:
-            print(
-                f'\n[ERROR: invalid selection]\nPlease match cards belonging to the same month. {card.month} is not {match.month}.')
-            return False
+        else:  # match one card with one table match
+            gui.display_contents(matches, 'match available')
+            match = matches[gui.validate_input(
+                'Which card on the table would you like to match with?', len(matches))]
+            self.update_cards(card, match)
+            print('\nMATCH!')
+
+        # display updated win list before handover
+        gui.display_contents(self.collected, 'updated win pile')
 
     def update_cards(self, card, match=None, skip=False):
         """function to update cards in hand and table to collected"""
         self.hand.remove(card)
-        if isinstance(match, list):
+        if isinstance(match, list):  # for full month match
             for month_card in match:
                 table.contents.remove(month_card)
                 self.collected.append(month_card)
             self.collected.append(card)
-        else:
-            if skip:
+        else:  # single card match
+            if skip:  # if skip, only add to table, no match needed (None)
                 table.contents.append(card)
-            else:
+            else:  # update of collection and removal from table
                 table.contents.remove(match)
                 self.collected.extend([card, match])
 
+    def list_matches(self, card):
+        """function to obtain list of matches from table based on card month"""
+        matches = [
+            match for match in table.contents if match.month == card.month]
+        return matches
+
     def draw(self):
-        """function to draw card and match or add to hand"""
+        """function to draw card and match or add to table"""
         card = deck.contents.pop()  # draw new card and remove from deck (popping)
         print('\nNEW CARD DRAWN')
         print(card)
 
-        matches = list(
-            match for match in table.contents if match.month == card.month)
+        matches = self.list_matches(card)
         if matches:
-            # add to hand only if match available, will remove soon
+            # add to hand only if match available, will remove in update_cards
             self.hand.append(card)
-            gui.display_contents(matches, 'match available')
-            card, match = gui.validate_input(self, matches, draw=card)
-            self.match(card, match)
+            self.match(card, matches)
 
         else:
             print('\nNO MATCHES...')
             table.contents.append(card)
-
-    def skip(self, card):
-        """put card down on the table, draw, and pass player turn"""
-        if card.month in [match.month for match in table.contents]:  # restrict putting down cards with existing match
-            print(
-                '\n[ERROR: invalid selection]\nCard has matching month on table. Please put down a card without a match.')
-            return False
-
-        else:  # put down card on table and draw one
-            self.update_cards(card, skip=True)
-            return True
 
     # too many conditionals: check how to refactor the remaining player functions here? #
 
@@ -220,29 +206,24 @@ class Player:
                     print(f'\nTHREE {card_set.upper()} SET WON!')
                     win = True
 
-        if win:
-            return self.koi_call(koi)
-        else:
-            return False  # game_end, koi
+        if win:  # check if winner identified
+            if koi:  # if already in koi koi phase
+                choice = 1  # end game
+            else:  # else offer koi koi
+                gui.display_contents(('Call Koi-Koi', 'End Round'),
+                                     'winning player options')
+                choice = gui.validate_input(
+                    'Would you like to call Koi-Koi?', 2)
+            if choice == 0:
+                return True  # enable koi koi phase
+            else:
+                return self.tally_player_score()  # end game, return winner
+        else:  # if not a winner
+            return  # None
 
-    def koi_call(self, koi=False):
-        """function to offer koi-koi"""
-        if koi:  # no choice if koi koi called already
-            choice = 2
-        else:
-            gui.display_contents(('Call Koi-Koi', 'End Round'),
-                                 'winning player options')
-            choice = gui.validate_between_two(
-                self, 'Would you like to call Koi-Koi?')
-        if choice == 1:
-            return True
-        else:
-            print('\nENDING ROUND...')
-            self.tally_score()
-            return 'end'  # end game
-
-    def tally_score(self):
+    def tally_player_score(self):
         """function to add final light scores and continue if rounds remain"""
+        print('\nENDING ROUND...')
         if 'five' in self.sets:
             self.score += 10
         elif 'four' in self.sets:
@@ -257,6 +238,7 @@ class Player:
             self.score *= 2
 
         print(f'\nROUND SCORE: {self.score}')
+        return self
 
 
 class Pile:
@@ -299,12 +281,7 @@ def shuffle_cards(players):
     return new_deck, new_table
 
 
-# initialise players, deck, and table
-player_1 = Player()
-player_2 = Player()
-
-deck, table = None, None  # space holders to use in functions~
-
+deck, table = None, None  # space holders to use in functions
 
 if __name__ == '__main__':
     if len(deck.contents) == 24:
