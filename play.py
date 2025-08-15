@@ -91,8 +91,9 @@ def play_game(players):
 
                 # get up to date opponent win pile by referring to opponent as rival[0]
                 rival = [other for other in players if other != player]
-                print(
-                    f"{player.name.upper()}'s TURN. \nYOUR POINTS SECURED: {player.final_score} \nRIVAL'S POINTS SECURED: {rival[0].final_score}")
+                print(f"{player.name.upper()}'s TURN.")
+                print(('-'*4) + f' YOUR POINTS: {player.final_score}')
+                print(('-'*4) + f" RIVAL'S POINTS: {rival[0].final_score}")
 
                 # always display both win piles
                 gui.display_contents(player.collected, 'your current win pile')
@@ -138,7 +139,20 @@ def play_game(players):
     # Endgame print winner
     print('\n' * 8)
     print('GAME OVER')
-    print(f'\n{winner.name.upper()} WINS!\n')
+    # control final winner print for highest score or tie
+    for player in players:
+        if not winner:  # if most recent winner was a tie (None)
+            winner = player
+        else:  # record highest score as winner
+            if player.final_score > winner.final_score:
+                winner = player
+            elif winner.final_score == player.final_score:
+                winner = None  # flag for draw/tie at the end only
+
+    if winner:
+        print(f'\n{winner.name.upper()} WINS!\n')
+    else:  # winner is still None after everything
+        print("\nIT'S A DRAW!\n")
 
 
 # edit more when more game options added

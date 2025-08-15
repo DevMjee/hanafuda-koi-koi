@@ -283,6 +283,7 @@ def shuffle_cards(players):
 
 deck, table = None, None  # space holders to use in functions
 
+
 if __name__ == '__main__':
     if len(deck.contents) == 24:
         print("All ok! Cards successfully created.")
