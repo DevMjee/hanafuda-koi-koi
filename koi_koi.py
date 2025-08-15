@@ -12,7 +12,6 @@ class Player:
             self.hand = []
             self.collected = []
             self.sets = {}
-            self.koi = False
         self.name = name
         self.score = score
         self.final_score = final_score
@@ -74,96 +73,65 @@ class Player:
 
     def check_win(self, koi):
         """function to track sets and score"""
-        win, cherry, moon, rain = False, False, False, False
-        for rarity, card_set in enumerate(hanafuda.types):
+        win = False  # define here in case of empty list
+        sake = False
+        # only loop through first four main types: chaff, poetry, seeds, light
+        for rarity, card_set in enumerate(hanafuda.types[:4]):
             cards_from_set = [
                 card for card in self.collected if card.yaku == card_set]
             set_count = len(cards_from_set)
 
-            # using to track which score to add: higher rarity = more points for less (chaff = 0, light = 3)
-            if rarity == 0:  # chaff
+            # rarity tracks set: higher rarity = more points (chaff = 0, light = 3)
+            if rarity == 0 and cards_from_set:  # chaff
                 # check special sets - not for chaff, but for seeds and light
                 for card in cards_from_set:
-                    # currently allowing sake cup to fit in multiple sets at one time - too strong? should it be one (strongest set) at a time?
                     if card.sake_cup:
-                        self.sets['sake'] = None  # store to track existence
+                        sake = True
 
-                # check set limit reached and if newly obtained
-                if card_set in self.sets:
-                    if self.sets[card_set] < set_count:
-                        self.score += set_count - 10  # adds only 1 per new chaff
-                        print(f'\n{card_set} SET WON!')
-                        win = True
+                # check chaff set
+                if self.check_limit_reached(card_set, set_count, 10):
+                    win = True  # do not set directly True, else will remove wins from other sets
 
-                elif set_count >= 10:
-                    self.score += set_count - 9  # adds 1 + 1 per extra chaff
-                    # for koi koi phase tracking
-                    self.sets[card_set] = set_count
-                    print(f'\n{card_set.upper()} SET WON!')
-                    win = True
-
-            elif rarity == 1:  # poetry
+            elif rarity == 1 and cards_from_set:  # poetry
                 # check special sets - must check all as 'if'
                 blues = len(
                     [card for card in cards_from_set if card.blue])
+                if blues == 3 and hanafuda.types[4] not in self.sets:
+                    self.sets[hanafuda.types[4]] = 5  # store to track win
+                    gui.print_win(card_set, hanafuda.types[4])
+                    win = True
+
                 reds = len(
                     [card for card in cards_from_set if card.red])
-                if blues == 3 and 'blue' not in self.sets:
-                    self.score += 5
-                    self.sets['blue'] = None  # store to track win
-                    print(f'\nBLUE {card_set.upper()} SET WON!')
+                if reds == 3 and hanafuda.types[5] not in self.sets:
+                    self.sets[hanafuda.types[5]] = 5  # store to track win
+                    gui.print_win(card_set, hanafuda.types[5])
                     win = True
 
-                if reds == 3 and 'red' not in self.sets:
-                    self.score += 5
-                    self.sets['red'] = None  # store to track win
-                    print(f'\nRED {card_set.upper()} SET WON!')
+                # check poetry standard set
+                if self.check_limit_reached(card_set, set_count, 5):
                     win = True
 
-                # check set limit reached and if newly obtained
-                if card_set in self.sets:
-                    if self.sets[card_set] < set_count:
-                        self.score += set_count - 5  # adds only 1 per new poetry
-                        print(f'\n{card_set.upper()} SET WON!')
-                        win = True
-
-                elif set_count >= 5:
-                    self.score += set_count - 4  # adds 1 + 1 per extra poetry
-                    # for koi koi phase tracking
-                    self.sets[card_set] = set_count
-                    print(f'\n{card_set.upper()} SET WON!')
-                    win = True
-
-            elif rarity == 2:  # seeds
+            elif rarity == 2 and cards_from_set:  # seeds
                 # check special sets
-                if 'sake' in self.sets:  # counts as seeds as well
+                if sake:  # sake cup counts as seeds as well
                     set_count += 1
 
                 animals = len(
                     [card for card in cards_from_set if card.animal])
-                if animals == 3 and 'animal' not in self.sets:
-                    self.score += 5
+                if animals == 3 and hanafuda.types[6] not in self.sets:
                     # store only to track win, not score
-                    self.sets['animal'] = None
-                    print(f'\nANIMAL {card_set.upper()} SET WON!')
+                    self.sets[hanafuda.types[6]] = 5
+                    gui.print_win(card_set, hanafuda.types[6])
                     win = True
 
-                # check set limit reached and if newly obtained
-                if card_set in self.sets:
-                    if self.sets[card_set] < set_count:
-                        self.score += set_count - 5  # adds only 1 per new seeds
-                        print(f'\n{card_set.upper()} SET WON!')
-                        win = True
-
-                elif set_count >= 5:
-                    self.score += set_count - 4  # adds 1 + 1 per extra seeds
-                    # for koi koi phase tracking
-                    self.sets[card_set] = set_count
-                    print(f'\n{card_set.upper()} SET WON!')
+                # check seeds standard set
+                if self.check_limit_reached(card_set, set_count, 5):
                     win = True
 
-            elif rarity == 3:  # light
-                # check special sets - other light sets don't add cumulative score, prefer rarest set
+            elif rarity == 3 and cards_from_set:  # light
+                # check special sets with flags
+                rain, moon, cherry = False, False, False
                 for card in cards_from_set:
                     if card.rain:
                         rain = True
@@ -173,41 +141,42 @@ class Player:
                         cherry = True
 
                 # can have both viewings added with lights
-                if cherry and 'sake' in self.sets and 'cherry' not in self.sets:
-                    self.score += 5
-                    self.sets['cherry'] = None
-                    print(f'\nCHERRY VIEWING {card_set.upper()} SET WON!')
-                    win = True
-                if moon and 'sake' in self.sets and 'moon' not in self.sets:
-                    self.score += 5
-                    self.sets['moon'] = None
-                    print(f'\nMOON VIEWING {card_set.upper()} SET WON!')
+                if sake:  # check viewing sets with flags
+                    if cherry and hanafuda.types[7] not in self.sets:
+                        self.sets[hanafuda.types[7]] = 5
+                        gui.print_win(card_set, hanafuda.types[7])
+                        win = True
+
+                    if moon and hanafuda.types[8] not in self.sets:
+                        self.sets[hanafuda.types[8]] = 5
+                        gui.print_win(card_set, hanafuda.types[8])
+                        win = True
+
+                # check standard light sets
+                if set_count == 5 and hanafuda.types[9] not in self.sets:
+                    self.sets[hanafuda.types[9]] = 10
+                    gui.print_win(card_set, hanafuda.types[9])
                     win = True
 
-                # don't add scores here, only add the highest at TRIGGER WIN game end - 10, 7, 8, 6
-                if set_count == 5 and 'five' not in self.sets:
-                    self.sets['five'] = None
-                    print(f'\nFIVE {card_set.upper()} SET WON!')
-                    win = True
-
-                elif set_count == 4 and 'four' not in self.sets:
-                    if rain and 'rain' not in self.sets:
-                        self.sets['rain'] = None
-                        print(f'\nRAINY FOUR {card_set.upper()} SET WON!')
+                elif set_count == 4 and hanafuda.types[10] not in self.sets:
+                    # check for rain
+                    if rain and hanafuda.types[11] not in self.sets:
+                        self.sets[hanafuda.types[11]] = 7
+                        gui.print_win(card_set, hanafuda.types[11])
                         win = True
 
                     else:
-                        self.sets['four'] = None
-                        print(f'\nFOUR {card_set.upper()} SET WON!')
+                        self.sets[hanafuda.types[10]] = 8
+                        gui.print_win(card_set, hanafuda.types[10])
                         win = True
 
-                elif set_count == 3 and 'three' not in self.sets:
-                    self.sets['three'] = None
-                    print(f'\nTHREE {card_set.upper()} SET WON!')
+                elif set_count == 3 and hanafuda.types[12] not in self.sets:
+                    self.sets[hanafuda.types[12]] = 6
+                    gui.print_win(card_set, hanafuda.types[12])
                     win = True
 
         if win:  # check if winner identified
-            if koi:  # if already in koi koi phase
+            if koi or not self.hand:  # check koi phase or empty hand
                 choice = 1  # end game
             else:  # else offer koi koi
                 gui.display_contents(('Call Koi-Koi', 'End Round'),
@@ -217,24 +186,63 @@ class Player:
             if choice == 0:
                 return True  # enable koi koi phase
             else:
-                return self.tally_player_score()  # end game, return winner
+                return self.tally_player_score()  # end game, return winner score
         else:  # if not a winner
             return  # None
 
-    def tally_player_score(self):
-        """function to add final light scores and continue if rounds remain"""
-        print('\nENDING ROUND...')
-        if 'five' in self.sets:
-            self.score += 10
-        elif 'four' in self.sets:
-            self.score += 8
-        elif 'rain' in self.sets:
-            self.score += 7
-        elif 'three' in self.sets:
-            self.score += 6
+    def check_limit_reached(self, card_set, set_count, limit):
+        """function to check if limit reached for standard set collections (chaff, poetry, seeds)"""
+        # check set limit reached and if newly obtained
+        if card_set in self.sets:
+            if self.sets[card_set] < set_count:
+                # track how many for scoring later
+                self.sets[card_set] = set_count
+                gui.print_win(card_set)
+                return True
 
-        # score doubles if >= 7
-        if self.score >= 7:
+        # self.sets used for koi koi phase tracking
+        elif set_count >= limit:
+            self.sets[card_set] = set_count
+            gui.print_win(card_set)
+            return True
+
+        else:
+            return False
+
+    def tally_player_score(self):
+        """function to add final scores and continue if rounds remain"""
+        print('\nENDING ROUND...')
+
+        # flags to determine whether stronger set has been made or not if it exists
+        seeds, poetry = True, True
+
+        # reverse to check for stronger sets first
+        for index, card_set in enumerate(reversed(hanafuda.types)):
+            if card_set in self.sets:
+                if index in range(6):  # add no bonuses for lights
+                    self.score += self.sets[card_set]
+
+                # add +1 bonuses for blue, red, animal sets - limits for each
+                elif index in range(6, 9):
+                    if index == 6:  # seeds animal
+                        self.score += (self.sets[card_set] +
+                                       self.sets[hanafuda.types[2]] - 3)
+                        seeds = False
+                    else:  # poetry blue and red
+                        self.score += (self.sets[card_set] +
+                                       self.sets[hanafuda.types[1]] - 3)
+                        poetry = False
+                elif index == 10:  # add 1 +1 for standard sets if no special sets
+                    if seeds:
+                        self.score += 1 + self.sets[hanafuda.types[2]] - 5
+                elif index == 11:
+                    if poetry:
+                        self.score += 1 + self.sets[hanafuda.types[1]] - 5
+                else:  # chaff
+                    self.score += 1 + self.sets[hanafuda.types[0]] - 10
+
+        # score doubles if > 7
+        if self.score > 7:
             self.score *= 2
 
         print(f'\nROUND SCORE: {self.score}')
@@ -282,10 +290,3 @@ def shuffle_cards(players):
 
 
 deck, table = None, None  # space holders to use in functions
-
-
-if __name__ == '__main__':
-    if len(deck.contents) == 24:
-        print("All ok! Cards successfully created.")
-    else:
-        print('ERROR: Incorrect deck size and setup for koi-koi.')

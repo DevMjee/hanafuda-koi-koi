@@ -45,3 +45,11 @@ def validate_input(msg, highest):
         except IndexError as err:  # if out of range
             print(
                 f'[ERROR: {err}] \nPlease enter a valid integer choice between 1 and {highest}.')
+
+
+def print_win(card_set, special=None):
+    """function for printing sets won consistently"""
+    if special:
+        print(f'\n{special.upper()} {card_set.upper()} SET WON!')
+    else:
+        print(f'\n{card_set.upper()} SET WON!')

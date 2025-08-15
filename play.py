@@ -8,6 +8,7 @@ import gui
 # - - (keep lucky hand off? not much fun if it happens, just a scroll of text)
 # - create bot player for computer vs human
 # - UPDATE README to include instructions and summary of game with screenshots and python version
+# - currently allowing sake cup to fit in multiple sets at one time - too strong?
 
 
 def make_move(player, table):
@@ -32,8 +33,9 @@ def make_move(player, table):
                 player.match(hand_choice, table_matches)
                 return  # break loop
             else:  # if mismatched month
+                print('\n[ERROR: invalid selection]')
                 print(
-                    f'\n[ERROR: invalid selection]\nPlease match cards from the same month. {hand_choice.month} is not on the table.')
+                    f'\nPlease match the same month. {hand_choice.month} is not on the table.')
 
         elif move_choice == 1:  # put down and draw
             # add to table, then draw, then break
@@ -41,8 +43,9 @@ def make_move(player, table):
                 'Which card would you like to play from your hand?', len(player.hand))]
             # restrict putting down cards with existing match
             if player.list_matches(hand_choice):
+                print('\n[ERROR: invalid selection]')
                 print(
-                    '\n[ERROR: invalid selection]\nCard has matching month on table. Please put down a card without a match.')
+                    f'{hand_choice.month} is on the table. Please put down a card without a match.')
 
             else:  # put down card on table and draw one
                 player.update_cards(hand_choice, skip=True)
@@ -160,8 +163,6 @@ if __name__ == '__main__':
     # ...or default names
     name_1 = input('\nEnter Player 1\'s name:\n').strip() or 'Player 1'
     name_2 = input('\nEnter Player 2\'s name:\n').strip() or 'Player 2'
-
-    # transfer deck and table creation to play.py? #
 
     # initialise players, deck, and table
     player_1 = koi_koi.Player(name=name_1)
