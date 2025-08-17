@@ -30,7 +30,7 @@ This project supplies a Koi Koi simulator which applies the following rules:
 
 **Sake Cup Card**
 * The Sake Cup card counts as a Chaff and a Seeds card simultaneously. 
-* Having this card enabled the two card special Viewing sets with either the Moon and Cherry Blossom Lights.
+* Having this card enabled the two card special Viewing sets with either the Moon and Cherry Blossom Lights
 
 **Yaku (Scoring Sets)**
 * 10 Chaff              = 1 point (+1 per)
