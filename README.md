@@ -8,7 +8,8 @@ This project simulates a hanafuda deck by defining cards using Class and inherit
 
 ## Koi Koi
 This project supplies a Koi Koi simulator which applies the following rules:  
-  **Koi Koi**
+
+**Game Structure**
 * 2 players take turns matching cards from their hands with cards belonging to the same month on the table.
 * The aim is to make special sets, known as Yaku, using cards across the different months score points.
 * As soon as a set is made by either person, the winning player can end the round or call Koi Koi to try and earn more points.
@@ -18,38 +19,44 @@ This project supplies a Koi Koi simulator which applies the following rules:
 * The first player of round 1 is randomly chosen.
 * The winning player of the last round begins plays first in the subsequent round.
 * If the points scored in a single round are greater than or equal to 7 points, double the player score for that round.
-* The player with the most points at the end of all rounds
+* The player with the most points at the end of all rounds.
 
-  **Hanafuda Deck Structure**
+**Hanafuda Deck**
 * 48 total cards made of:
-  * 5 Light cards
-  * 9 Seeds cards
-  * 10 Poetry cards
-  * 24 Chaff cards
+  * 5 Light cards       - 1 Rainy Light, 1 Moon Light, 1 Cherry Blossom Light
+  * 9 Seeds cards       - 3 Animals: 1 Boar, 1 Deer, 1 Butterfly
+  * 10 Poetry cards     - 3 Blue, 3 Red
+  * 24 Chaff cards      - 1 Sake Cup
 
-  **Yaku (Scoring Sets)**
+**Sake Cup Card**
+* The Sake Cup card counts as a Chaff and a Seeds card simultaneously. 
+* Having this card enabled the two card special Viewing sets with either the Moon and Cherry Blossom Lights.
+
+**Yaku (Scoring Sets)**
 * 10 Chaff              = 1 point (+1 per)
 * 5 Poetry              = 1 point (+1 per)
 * 5 Seeds               = 1 point (+1 per)
-* 3 (all) Blue Poetry   = 5 points
-* 3 (all) Red Poetry    = 5 points
-* 3 Boar-Deer-Butterfly = 5 points
+* 3 Blue Poetry         = 5 points (+1 per poetry)
+* 3 Red Poetry          = 5 points (+1 per poetry)
+* 3 Boar-Deer-Butterfly = 5 points (+1 per seeds) - called the 'Animals' set in this simulator
 * 2 Moon Viewing        = 5 points
 * 2 Cherry Viewing      = 5 points
 * 3 Three Lights        = 6 points
 * 4 Rainy Four Lights   = 7 points
 * 4 Four Lights         = 8 points
-* 5 (all) Five Lights   = 10 points
+* 5 Five Lights         = 10 points
 
-  **Lucky Hands**
+**Lucky Hands**
 * 4 (all) of a month    = 6 points + instant win - 4 of a kind
 * 4 pairs of 4 months   = 6 points + instant win - 4 pairs
 
 ## How to Run
 To run Koi Koi locally, open the terminal and run the following command:
-    console
-    username@machine:~$ python3 play.py
-This will prompt you to input the names for Players 1 and 2, then it will ask how many rounds of Koi Koi you would like to play. It will then simulate a game, printing the scores and table for both players, and the hand of only the current active player.
+````console
+python3 play.py
+````
+
+This will prompt you to input the names for Players 1 and 2, then it will ask how many rounds of Koi Koi you would like to play. It will then simulate a game, printing the scores and table for both players, and the hand of only the current active player. The user will input numbers to interact with the game and choices in the terminal.
 
 ## Future Work
 Currently, Koi Koi can only be played locally by passing the same device between players. Future work would see this project implementing networking to enable players across devices to play together, or it would implement a bot player for individual users to play against. Further scope includes general improvements on the game GUI. Designing a tutorial to teach users how to play Koi Koi would also make this project more accessible.
