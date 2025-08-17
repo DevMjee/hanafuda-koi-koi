@@ -3,13 +3,6 @@ import random
 import koi_koi
 import gui
 
-# still need to implement
-# - lucky hand detection and implementation
-# - - (keep lucky hand off? not much fun if it happens, just a scroll of text)
-# - create bot player for computer vs human
-# - UPDATE README to include instructions and summary of game with screenshots and python version
-# - currently allowing sake cup to fit in multiple sets at one time - too strong?
-
 
 def make_move(player, table):
     """function to define choices turn player can make"""
@@ -85,6 +78,16 @@ def play_game(players):
 
         # reset deck and table at start of round
         koi_koi.deck, koi_koi.table = koi_koi.shuffle_cards(players)
+
+        # check for lucky hands before continuing, only at start of round
+        for player in players:
+            if player.lucky_hand():
+                playing = False
+                gui.display_contents(player.hand, 'winning hand')
+                print(f'\n{player.name} WINS: LUCKY HAND!\n')
+                player.final_score += 6  # lucky hands award 6 points and end the round
+                winner = player
+                break
 
         while playing:
             for player in players:

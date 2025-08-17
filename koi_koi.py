@@ -3,6 +3,38 @@ import random
 import hanafuda
 import gui
 
+# Yaku (scoring sets)
+# 10 Chaff              = 1 point (+1 per)
+# 5 Poetry              = 1 point (+1 per)
+# 5 Seeds               = 1 point (+1 per)
+# 3 (all) Blue Poetry   = 5 points
+# 3 (all) Red Poetry    = 5 points
+# 3 Boar-Deer-Butterfly = 5 points
+# 2 Moon Viewing        = 5 points
+# 2 Cherry Viewing      = 5 points
+# 3 Three Lights        = 6 points
+# 4 Rainy Four Lights   = 7 points
+# 4 Four Lights         = 8 points
+# 5 (all) Five Lights   = 10 points
+
+# Instant win hands to start with
+# 4 (all) of a month    = 6 points + instant win - 4 of a kind
+# 4 pairs of 4 months   = 6 points + instant win - 4 pairs
+
+# if points > 7, double score
+# 48 total cards
+# - 5 lights
+# - 9 seeds
+# - 10 poetry
+# - 24 chaff
+
+# As soon as a set is made by either person, round pauses
+# First winning player can choose to call koi-koi to increase points
+# Round ends when another set is made or existing one is added to
+# Whichever player makes the set and ends the round wins
+# Only the winning player tracks points earned in round
+# Rounds can be 3, 6 or 12
+
 
 class Player:
     """Class defining current player hand, card pickups, and score across rounds"""
@@ -209,6 +241,22 @@ class Player:
         else:
             return False
 
+    def lucky_hand(self):
+        """function to detect lucky hands at round start"""
+        months = [card.month for card in self.hand]  # list of all months
+        pairs = True  # flag to check for 4 pair hand
+
+        #  check for full month in hand
+        for month in months:
+            if months.count(month) == 4:
+                return True
+            # not a pairs hand if any month count != 2
+            elif months.count(month) != 2:
+                pairs = False
+
+        if pairs:  # after checking all months, must be pairs hand if still True
+            return True
+
     def tally_player_score(self):
         """function to add final scores and continue if rounds remain"""
         print('\nENDING ROUND...')
@@ -241,8 +289,8 @@ class Player:
                 else:  # chaff
                     self.score += 1 + self.sets[hanafuda.types[0]] - 10
 
-        # score doubles if > 7
-        if self.score > 7:
+        # score doubles if >= 7
+        if self.score >= 7:
             self.score *= 2
 
         print(f'\nROUND SCORE: {self.score}')

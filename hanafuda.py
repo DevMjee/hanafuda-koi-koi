@@ -1,38 +1,4 @@
 """Module defining hanafuda (flower cards)"""
-# Alternative games: Hawaii Go-Stop and Hawaii Higo-Bana
-
-# Yaku (scoring sets)
-# 10 Chaff              = 1 point (+1 per)
-# 5 Poetry              = 1 point (+1 per)
-# 5 Seeds               = 1 point (+1 per)
-# 3 (all) Blue Poetry   = 5 points
-# 3 (all) Red Poetry    = 5 points
-# 3 Boar-Deer-Butterfly = 5 points
-# 2 Moon Viewing        = 5 points
-# 2 Cherry Viewing      = 5 points
-# 3 Three Lights        = 6 points
-# 4 Rainy Four Lights   = 7 points
-# 4 Four Lights         = 8 points
-# 5 (all) Five Lights   = 10 points
-
-# Instant win hands to start with
-# 4 (all) of a month    = 6 points + instant win - 4 of a kind
-# 4 pairs of 4 months   = 6 points + instant win - 4 pairs
-
-# if points > 7, double score
-# 48 total cards
-# - 5 lights
-# - 9 seeds
-# - 10 poetry
-# - 24 chaff
-
-# As soon as a set is made by either person, round pauses
-# First winning player can choose to call koi-koi to increase points
-# Round ends when another set is made or existing one is added to
-# Whichever player makes the set and ends the round wins
-# Only the winning player tracks points earned in round
-# Rounds can be 3, 6 or 12
-
 import calendar
 
 
