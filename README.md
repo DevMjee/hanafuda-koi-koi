@@ -1,4 +1,4 @@
-# Hanafuda-koi-koi. 
+# hanafuda-koi-koi. 
 ### A simulation of the Koi Koi card game in Python.
 
 ## What is Hanafuda?
