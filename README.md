@@ -1,10 +1,10 @@
-# hanafuda-koi-koi. 
-### A simulation of the Koi Koi card game in Python, using multiple files to enact separation of concerns.
+# Hanafuda-koi-koi. 
+### A simulation of the Koi Koi card game in Python.
 
 ## What is Hanafuda?
-Hanafuda are Japanese playing cards which literally translate to 'Flower Cards' in English. The deck is made of 48 cards, split into 12 suits with 4 members each. Each suit represents a month of the year. The cards typically depict different varieties of botany which showcase the seasonal flora of Japan over a year. 
+Hanafuda (Flower Cards) are Japanese playing cards which are smaller and thicker than playing cards from a standard 52 card deck. The Hanafuda deck is made of 48 cards, split into 12 suits with 4 members each. Each suit represents a month of the year. The cards traditionally depict 12 varieties of plants which grow within the seasons of their respective months, highlighting notable flora which regions of Japan may observe in a typical year. 
 
-This project simulates a hanafuda deck by defining cards using Class and inheritance to define each card as a unique object. The aim of this project is to provide a flexible deck which can be used as a base to apply towards playing Koi Koi. It is the hope that this project can be easily adapted to simulate other games using the hanafuda deck, such as the Korean game Go-Stop and the Hawaiian game Sakura.
+This project simulates a Hanafuda deck by defining cards using Classes and inheritance to define each card as a unique object. The aim of this project is to provide a deck which can be used for playing Koi Koi. It is the hope that this deck and entire project can be easily adapted towards simulating other games using the Hanafuda deck, such as the Korean game Go-Stop and the Hawaiian game Sakura.
 
 ## Koi Koi
 This project supplies a Koi Koi simulator which applies the following rules:  
@@ -13,15 +13,15 @@ This project supplies a Koi Koi simulator which applies the following rules:
 * 2 players take turns matching cards from their hands with cards belonging to the same month on the table.
 * The aim is to make special sets, known as Yaku, using cards across the different months score points.
 * As soon as a set is made by either person, the winning player can end the round or call Koi Koi to try and earn more points.
-* If the round continues, it will end when another set is made by either player, or an existing set is added to / upgraded.
+* If the round continues, it will end when another set is made by either player, or an existing set is added to or upgraded.
 * When the round ends, points are only awarded to the last player who earned a set. 
 * Games are made of either 3, 6, 9, or 12 rounds.
 * The first player of round 1 is randomly chosen.
 * The winning player of the last round begins plays first in the subsequent round.
 * If the points scored in a single round are greater than or equal to 7 points, double the player score for that round.
-* The player with the most points at the end of all rounds.
+* The player with the most points at the end of all rounds wins the game.
 
-**Hanafuda Deck**
+**Hanafuda Deck Composition**
 * 48 total cards made of:
   * 5 Light cards       - 1 Rainy Light, 1 Moon Light, 1 Cherry Blossom Light
   * 9 Seeds cards       - 3 Animals: 1 Boar, 1 Deer, 1 Butterfly
@@ -30,7 +30,7 @@ This project supplies a Koi Koi simulator which applies the following rules:
 
 **Sake Cup Card**
 * The Sake Cup card counts as a Chaff and a Seeds card simultaneously. 
-* Having this card enabled the two card special Viewing sets with either the Moon and Cherry Blossom Lights
+* Having this card enabled the two card special Viewing sets with either the Moon Light or the Cherry Blossom Light.
 
 **Yaku (Scoring Sets)**
 * 10 Chaff              = 1 point (+1 per)
@@ -38,7 +38,7 @@ This project supplies a Koi Koi simulator which applies the following rules:
 * 5 Seeds               = 1 point (+1 per)
 * 3 Blue Poetry         = 5 points (+1 per poetry)
 * 3 Red Poetry          = 5 points (+1 per poetry)
-* 3 Boar-Deer-Butterfly = 5 points (+1 per seeds) - called the 'Animals' set in this simulator
+* 3 Boar-Deer-Butterfly = 5 points (+1 per seeds)
 * 2 Moon Viewing        = 5 points
 * 2 Cherry Viewing      = 5 points
 * 3 Three Lights        = 6 points
@@ -51,7 +51,7 @@ This project supplies a Koi Koi simulator which applies the following rules:
 * 4 pairs of 4 months   = 6 points + instant win - 4 pairs
 
 ## How to Run
-To run Koi Koi locally, open the terminal and run the following command:
+To run Koi Koi locally, clone this repository and navigate to the directory where it is stored in the terminal. Then, run the following command:
 ````console
 python3 play.py
 ````
